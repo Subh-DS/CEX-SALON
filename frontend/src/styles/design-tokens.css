@@ -1,0 +1,74 @@
+/* Sundara Design Tokens — Stage 1
+ * Single source of truth. Tailwind config (Stage 2) will reference these values.
+ * Palette: Warm Sandstone. See decision.md §Color System.
+ */
+
+:root {
+  /* ---- Brand ---- */
+  --brand-name: "Sundara";
+  --brand-tagline: "Your beauty, your time.";
+
+  /* ---- Colors ---- */
+  --primary: #3b2038;        /* Deep Plum — primary brand color */
+  --primary-light: #b86f78;  /* Muted Rose */
+  --primary-dark: #2a1627;   /* Deep Plum, darker */
+  --secondary: #b86f78;      /* Muted Rose */
+  --background: #faf7f2;     /* Soft Ivory */
+  --surface: #ffffff;
+  --surface-warm: #f6f0e9;
+  --text: #211d20;           /* Deep Charcoal */
+  --text-muted: #756c70;
+  --border: #e7dfda;
+  --success: #477a63;
+  --warning: #c4842d;
+  --error: #b84444;
+  --accent: #3b2038;         /* Deep Plum */
+  --marigold: #d96b4a;       /* Soft Coral — micro-accents */
+  --marigold-deep: #b6492f;
+  --marigold-soft: #f9e7de;
+  --plum: #3b2038;
+  --rose: #b86f78;
+  --bone: #f3ece0;             /* Deeper neutral for alternating sections */
+
+  /* ---- Typography ---- */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-accent: "DM Sans", system-ui, sans-serif;
+
+  --text-display: 2.75rem;   /* 44px */
+  --text-h1: 2rem;           /* 32px */
+  --text-h2: 1.5rem;         /* 24px */
+  --text-h3: 1.25rem;        /* 20px */
+  --text-body: 1rem;         /* 16px */
+  --text-small: 0.875rem;    /* 14px */
+  --text-caption: 0.75rem;   /* 12px */
+
+  /* ---- Spacing (4px base) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ---- Radius ---- */
+  --radius-small: 6px;
+  --radius-medium: 12px;
+  --radius-large: 20px;
+  --radius-pill: 999px;
+
+  /* ---- Shadows (3 levels only) ---- */
+  --shadow-sm: 0 1px 2px rgba(44, 24, 16, 0.06);
+  --shadow-md: 0 4px 16px rgba(44, 24, 16, 0.08);
+  --shadow-lg: 0 12px 40px rgba(44, 24, 16, 0.14);
+
+  /* ---- Loyalty tiers ---- */
+  --tier-seed: #756c70;
+  --tier-bloom: #b86f78;
+  --tier-flourish: #d96b4a;
+  --tier-radiance: #3b2038;
+}

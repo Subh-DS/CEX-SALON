@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sundara — Design System Board (Stage 1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&family=DM+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#8b5e3c; --primary-light:#c4956a; --primary-dark:#5d3a1a;
+  --secondary:#d4a574; --background:#fdf8f4; --surface:#ffffff; --surface-warm:#faf3ed;
+  --text:#2c1810; --text-muted:#8b7355; --border:#e8ddd4;
+  --success:#5b8c5a; --warning:#c4842d; --error:#b84444; --accent:#9b2c2c;
+  --font-display:"Playfair Display",Georgia,serif; --font-body:"Inter",system-ui,sans-serif; --font-accent:"DM Sans",system-ui,sans-serif;
+  --r-s:6px; --r-m:12px; --r-l:20px; --r-pill:999px;
+  --sh-sm:0 1px 2px rgba(44,24,16,.06); --sh-md:0 4px 16px rgba(44,24,16,.08); --sh-lg:0 12px 40px rgba(44,24,16,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--background);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.6;padding:40px 24px;max-width:1200px;margin:0 auto}
+.eyebrow{font-family:var(--font-accent);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);font-weight:700}
+h1{font-family:var(--font-display);font-size:44px;line-height:1.15;margin:8px 0 8px}
+.sub{color:var(--text-muted);max-width:640px;margin-bottom:32px}
+.section{margin:48px 0}
+.section>h2{font-family:var(--font-display);font-size:28px;margin-bottom:4px}
+.section>p{color:var(--text-muted);font-size:14px;margin-bottom:20px}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.g3{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-m);box-shadow:var(--sh-sm);padding:20px}
+.swatch{border-radius:var(--r-m);overflow:hidden;border:1px solid var(--border);background:var(--surface)}
+.swatch .c{height:72px}
+.swatch .t{padding:10px 12px;font-size:13px}
+.swatch .t b{display:block;font-size:13px}
+.swatch .t span{color:var(--text-muted);font-size:12px}
+.type-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-m);padding:16px 20px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.type-row small{color:var(--text-muted);font-family:var(--font-accent);font-size:12px;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 22px;border-radius:var(--r-pill);font-family:var(--font-accent);font-weight:600;font-size:14px;border:1px solid transparent;cursor:pointer}
+.btn-p{background:var(--primary);color:#fff}
+.btn-s{background:transparent;color:var(--primary);border-color:var(--primary)}
+.btn-g{background:transparent;color:var(--text-muted);border-color:var(--border)}
+.badge{display:inline-flex;align-items:center;height:26px;padding:0 12px;border-radius:var(--r-pill);font-family:var(--font-accent);font-size:12px;font-weight:600}
+.b-conf{background:#e9f1e9;color:var(--success)}
+.b-gold{background:#f6ecdd;color:var(--primary-dark)}
+.b-mut{background:var(--surface-warm);color:var(--text-muted);border:1px solid var(--border)}
+.input{width:100%;min-height:44px;border:1px solid var(--border);border-radius:var(--r-s);padding:0 14px;font-size:15px;font-family:var(--font-body);background:var(--surface);color:var(--text)}
+.input:focus{outline:2px solid var(--primary-light);border-color:var(--primary)}
+label.fl{font-family:var(--font-accent);font-size:12px;font-weight:600;letter-spacing:.04em;display:block;margin-bottom:6px}
+.stepper{display:flex;gap:0;margin:8px 0 20px}
+.step{flex:1;text-align:center;position:relative;font-family:var(--font-accent);font-size:12px;color:var(--text-muted)}
+.step .dot{width:28px;height:28px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:6px}
+.step.done .dot{background:var(--primary);color:#fff;border-color:var(--primary)}
+.step.now .dot{border:2px solid var(--primary);color:var(--primary)}
+.step::before{content:"";position:absolute;top:14px;left:-50%;width:100%;height:2px;background:var(--border);z-index:-1}
+.step:first-child::before{display:none}
+.step.done::before{background:var(--primary)}
+.slots{display:flex;flex-wrap:wrap;gap:8px}
+.slot{min-height:44px;padding:0 18px;border-radius:var(--r-pill);border:1px solid var(--border);background:var(--surface);font-weight:600;font-size:14px;cursor:pointer}
+.slot.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
+.slot.off{opacity:.4;text-decoration:line-through;cursor:not-allowed}
+.loyal{background:var(--primary-dark);color:#f6ecdd;border-radius:var(--r-l);padding:24px;box-shadow:var(--sh-md)}
+.loyal .bar{height:10px;border-radius:var(--r-pill);background:rgba(255,255,255,.2);margin:12px 0 8px;overflow:hidden}
+.loyal .bar i{display:block;height:100%;width:78%;background:var(--secondary);border-radius:var(--r-pill)}
+table.t{width:100%;border-collapse:collapse;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-m);overflow:hidden}
+table.t th{font-family:var(--font-accent);font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);text-align:left;padding:10px 14px;background:var(--surface-warm);border-bottom:1px solid var(--border)}
+table.t td{padding:12px 14px;border-bottom:1px solid var(--border)}
+.sched{display:flex;gap:12px;align-items:stretch;margin-bottom:10px}
+.sched .time{font-family:var(--font-accent);font-weight:700;font-size:13px;min-width:56px;padding-top:12px}
+.sched .body{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-m);padding:12px 16px}
+.sched.brk .body{background:transparent;border-style:dashed;color:var(--text-muted);text-align:center}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-l);overflow:hidden}
+.hero .copy{padding:40px}
+.hero h3{font-family:var(--font-display);font-size:38px;line-height:1.15;margin:10px 0 12px}
+.hero p{color:var(--text-muted);margin-bottom:20px}
+.hero .img{min-height:320px;background:linear-gradient(135deg,#c4956a,#8b5e3c 60%,#5d3a1a);display:flex;align-items:flex-end;padding:24px;color:#fff}
+.hero .img small{background:rgba(0,0,0,.35);padding:6px 12px;border-radius:var(--r-pill);font-size:12px}
+.note{background:var(--surface-warm);border:1px solid var(--border);border-radius:var(--r-m);padding:16px 20px;font-size:14px;color:var(--text-muted)}
+@media(max-width:760px){.hero{grid-template-columns:1fr}h1{font-size:32px}.hero h3{font-size:28px}body{padding:24px 16px}}
+</style>
+</head>
+<body>
+
+<div class="eyebrow">Sundara · Design System · Stage 1</div>
+<h1>Warm sandstone, editorial type, quiet luxury.</h1>
+<p class="sub">Contemporary Indian premium beauty — not a purple-gradient SaaS, not a temple postcard. Tokens live in <b>frontend/src/styles/design-tokens.css</b>; this board is the visual contract for Stage 2 implementation.</p>
+
+<div class="section">
+<h2>1 · Color</h2>
+<p>Restrained earth palette. Maroon reserved for tier/rank moments only.</p>
+<div class="grid g4">
+<div class="swatch"><div class="c" style="background:#8b5e3c"></div><div class="t"><b>Primary · Warm Sienna</b><span>#8B5E3C · buttons, active states</span></div></div>
+<div class="swatch"><div class="c" style="background:#c4956a"></div><div class="t"><b>Primary Light · Sandstone</b><span>#C4956A · hovers, progress</span></div></div>
+<div class="swatch"><div class="c" style="background:#5d3a1a"></div><div class="t"><b>Primary Dark · Umber</b><span>#5D3A1A · loyalty card, footer</span></div></div>
+<div class="swatch"><div class="c" style="background:#d4a574"></div><div class="t"><b>Secondary · Muted Gold</b><span>#D4A574 · accents, dividers</span></div></div>
+<div class="swatch"><div class="c" style="background:#fdf8f4;border-bottom:1px solid #e8ddd4"></div><div class="t"><b>Background · Warm Ivory</b><span>#FDF8F4 · page base</span></div></div>
+<div class="swatch"><div class="c" style="background:#2c1810"></div><div class="t"><b>Text · Deep Brown</b><span>#2C1810 · softer than black</span></div></div>
+<div class="swatch"><div class="c" style="background:#9b2c2c"></div><div class="t"><b>Accent · Deep Maroon</b><span>#9B2C2C · sparing: Radiance tier</span></div></div>
+<div class="swatch"><div class="c" style="background:#5b8c5a"></div><div class="t"><b>Success · Muted Green</b><span>#5B8C5A · confirmations</span></div></div>
+</div>
+</div>
+
+<div class="section">
+<h2>2 · Typography</h2>
+<p>Playfair Display for voice, Inter for work, DM Sans for labels.</p>
+<div class="type-row"><span style="font-family:var(--font-display);font-size:38px">You're booked, Priya.</span><small>Display · Playfair 38</small></div>
+<div class="type-row"><span style="font-size:24px;font-weight:600">Choose your expert</span><small>H2 · Inter 24 semibold</small></div>
+<div class="type-row"><span style="font-size:16px">Hair Spa · 60 min · ₹1,499 with Ananya</span><small>Body · Inter 16</small></div>
+<div class="type-row"><span style="font-family:var(--font-accent);font-size:12px;letter-spacing:.08em">STEP 3 OF 6 — SELECT DATE</span><small>Label · DM Sans 12 caps</small></div>
+</div>
+
+<div class="section">
+<h2>3 · Components</h2>
+<p>One version of each. Stage 2 builds these as React components with identical specs.</p>
+<div class="grid g3">
+<div class="card"><div class="eyebrow">Buttons</div><br>
+<button class="btn btn-p">Book Now</button><br><br>
+<button class="btn btn-s">View Services</button><br><br>
+<button class="btn btn-g">Cancel</button></div>
+<div class="card"><div class="eyebrow">Badges</div><br>
+<span class="badge b-conf">Confirmed</span> <span class="badge b-gold">Gold · Flourish</span> <span class="badge b-mut">Rescheduled</span><br><br>
+<span class="badge b-conf">+120 points earned</span></div>
+<div class="card"><div class="eyebrow">Form field</div><br>
+<label class="fl" for="d1">Phone number</label>
+<input class="input" id="d1" value="+91 98765 43210"></div>
+<div class="card"><div class="eyebrow">Service card</div><br>
+<b>Hair Spa Ritual</b><br><small style="color:var(--text-muted)">60 min · Deep nourishment with warm oils</small><br><br>
+<b>₹1,499</b> &nbsp;<button class="btn btn-p" style="min-height:40px">Select</button></div>
+<div class="card"><div class="eyebrow">Staff card</div><br>
+<b>Ananya Sharma</b> · ★ 4.9<br><small style="color:var(--text-muted)">Color specialist · 8 yrs · 40+ reviews</small><br><br>
+<button class="btn btn-s" style="min-height:40px">Choose Ananya</button></div>
+<div class="card"><div class="eyebrow">Appointment card</div><br>
+<b>Sat, 20 Sep · 10:30 AM</b><br><small style="color:var(--text-muted)">Hair Spa with Ananya · ₹1,499</small><br><br>
+<span class="badge b-conf">Confirmed</span></div>
+</div>
+</div>
+
+<div class="section">
+<h2>4 · Booking stepper + slots (Steps 3–4)</h2>
+<p>Progress always visible; back-nav preserves selections.</p>
+<div class="card">
+<div class="stepper">
+<div class="step done"><div class="dot">✓</div><br>Service</div>
+<div class="step done"><div class="dot">✓</div><br>Expert</div>
+<div class="step now"><div class="dot">3</div><br>Date</div>
+<div class="step"><div class="dot">4</div><br>Time</div>
+<div class="step"><div class="dot">5</div><br>Review</div>
+<div class="step"><div class="dot">6</div><br>Pay</div>
+</div>
+<div class="eyebrow">Available times · Sat 20 Sep · Ananya</div>
+<div class="slots" style="margin-top:10px">
+<button class="slot">09:00</button><button class="slot sel">10:30</button><button class="slot">12:00</button><button class="slot off">13:30</button><button class="slot">15:00</button><button class="slot">16:30</button>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2>5 · Loyalty card (Glow Levels)</h2>
+<p>Dark umber card; progress is the hero, not decoration.</p>
+<div class="loyal">
+<div class="eyebrow" style="color:var(--secondary)">Flourish member · Gold</div>
+<div style="font-family:var(--font-display);font-size:32px;margin-top:4px">1,170 / 1,500 points</div>
+<div class="bar"><i></i></div>
+<small>330 points to Radiance · ~2 visits · 10% off today</small>
+</div>
+</div>
+
+<div class="section">
+<h2>6 · Landing hero (editorial, Decide surface)</h2>
+<p>One idea per section. Photography: Indian model + salon interior (Unsplash, production: CDN).</p>
+<div class="hero">
+<div class="copy">
+<div class="eyebrow">Sundara · Bhubaneswar</div>
+<h3>Your beauty,<br>your time.</h3>
+<p>Book trusted experts in minutes. Earn Glow points on every visit.</p>
+<button class="btn btn-p">Book Now</button> &nbsp; <button class="btn btn-s">Explore Services</button>
+</div>
+<div class="img"><small>Photography placeholder — Indian salon editorial</small></div>
+</div>
+</div>
+
+<div class="section">
+<h2>7 · Admin density (Monitor surface)</h2>
+<p>Tables and filters, no hero. Today's bookings example.</p>
+<table class="t">
+<tr><th>Time</th><th>Customer</th><th>Service</th><th>Expert</th><th>Status</th></tr>
+<tr><td>09:00</td><td>Rahul V.</td><td>Haircut</td><td>Kabir</td><td><span class="badge b-conf">Confirmed</span></td></tr>
+<tr><td>10:30</td><td>Priya M.</td><td>Hair Spa</td><td>Ananya</td><td><span class="badge b-conf">Confirmed</span></td></tr>
+<tr><td>12:00</td><td>—</td><td colspan="2" style="color:var(--text-muted)">Break</td><td><span class="badge b-mut">Blocked</span></td></tr>
+</table>
+</div>
+
+<div class="section">
+<h2>8 · Staff day (Operate surface)</h2>
+<div class="sched"><div class="time">09:00</div><div class="body"><b>Haircut · Rahul</b> <span class="badge b-conf">Confirmed</span> &nbsp;<button class="btn btn-p" style="min-height:36px;padding:0 16px">Start</button></div></div>
+<div class="sched"><div class="time">10:30</div><div class="body"><b>Hair Spa · Priya</b> — prefers warm oil, sensitive scalp</div></div>
+<div class="sched brk"><div class="time">12:00</div><div class="body">Break</div></div>
+</div>
+
+<div class="note"><b>Responsive rules:</b> mobile-first (0–639px primary booking), tablet 640–1023, desktop 1024–1439, large 1440+ max-width container. Booking steps full-width cards + sticky summary bar on mobile; touch targets ≥ 44px. Reduced-motion respected (Stage 2). Copy tone: warm, direct, no emoji — "You're booked", "You earned 120 points", "That time was just taken."</div>
+
+</body>
+</html>

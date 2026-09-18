@@ -1,0 +1,31 @@
+@import "./styles/design-tokens.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: var(--background);
+  color: var(--text);
+  font-family: var(--font-body);
+  overflow-x: clip;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  /* Print/PDF renderers don't fire IntersectionObserver: force motion states visible */
+  *, *::before, *::after {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  /* Keep dark-section text readable by preserving backgrounds in print */
+  .bg-plum, .bg-primary, footer {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
