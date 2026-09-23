@@ -1,15 +1,29 @@
+import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import RewardsSection from "@/components/loyalty/RewardsSection";
 import GlowSkeleton from "@/components/loyalty/GlowSkeleton";
+import { ToastStack, type ToastMsg } from "@/components/loyalty/Toast";
 import { useLoyaltyAccount, useRewards } from "@/api/loyalty";
+
+let toastId = 0;
 
 /** Rewards shelf — shares the real catalog + redemption with Glow Points. */
 export default function Rewards() {
   const accountQ = useLoyaltyAccount();
   const rewardsQ = useRewards();
+  const [toasts, setToasts] = useState<ToastMsg[]>([]);
+
+  const pushToast = useCallback((text: string, tone: "success" | "warn") => {
+    const id = ++toastId;
+    setToasts((prev) => [...prev.slice(-2), { id, text, tone }]);
+  }, []);
+  const dropToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   return (
     <div className="mx-auto max-w-4xl">
+      <ToastStack toasts={toasts} onDone={dropToast} />
       <p className="font-accent text-xs font-bold uppercase tracking-[0.2em] text-primary">Rewards</p>
       <h1 className="mt-2 font-display text-[34px] font-medium tracking-tight text-ink">
         Worth coming back for.
@@ -18,8 +32,8 @@ export default function Rewards() {
         <div className="mt-6"><GlowSkeleton /></div>
       )}
       {(accountQ.isError || rewardsQ.isError) && (
-        <div className="mt-6 border border-ink/12 bg-white p-6">
-          <p className="text-[15px] text-ink/70">Rewards aren't available right now.</p>
+        <div className="mt-6 rounded-md2 border border-warmborder bg-white p-6 shadow-sm2">
+          <p className="text-[15px] text-ink/70">Rewards aren&apos;t available right now.</p>
           <button onClick={() => { accountQ.refetch(); rewardsQ.refetch(); }} className="mt-2 font-accent text-sm font-semibold text-primary underline-offset-4 hover:underline">
             Try again
           </button>
@@ -27,7 +41,7 @@ export default function Rewards() {
       )}
       {accountQ.data && rewardsQ.data && (
         <div className="mt-6">
-          <RewardsSection rewards={rewardsQ.data} balance={accountQ.data.pointsBalance} />
+          <RewardsSection rewards={rewardsQ.data} balance={accountQ.data.pointsBalance} onToast={pushToast} />
           <p className="mt-6 text-center text-sm text-ink/60">
             <Link to="/loyalty" className="font-semibold text-primary underline-offset-4 hover:underline">
               View your full Glow journey →

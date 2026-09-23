@@ -46,7 +46,7 @@ export default function StaffLogin() {
 
   return (
     <div className="mx-auto w-full max-w-md px-4 py-14">
-      <p className="font-accent text-xs font-bold uppercase tracking-[0.2em] text-primary">Sundara · Staff</p>
+      <p className="font-accent text-xs font-bold uppercase tracking-[0.2em] text-primary">The Blush Studio · Staff</p>
       <h1 className="mt-3 font-display text-4xl font-medium tracking-tight text-ink">Staff sign in</h1>
       <p className="mt-2 text-[15px] text-ink/60">For salon staff and managers. Your console opens after sign in.</p>
       <form onSubmit={submit} className="mt-6 rounded-md2 border border-warmborder bg-white p-6">

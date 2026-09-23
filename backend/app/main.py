@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,7 +9,20 @@ from app.core.errors import ok, register_error_handlers
 
 settings = get_settings()
 
-app = FastAPI(title=settings.app_name, version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    if settings.admin_email:
+        from app.db.session import SessionLocal
+        from app.services.ops import promote_admin
+
+        async with SessionLocal() as session:
+            if await promote_admin(session, settings.admin_email):
+                print(f"Bootstrapped admin role for {settings.admin_email}")
+    yield
+
+
+app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
 register_error_handlers(app)
 app.add_middleware(
     CORSMiddleware,

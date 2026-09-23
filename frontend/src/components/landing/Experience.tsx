@@ -30,7 +30,7 @@ export default function Experience() {
           className="max-w-2xl"
         >
           <p className="font-accent text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            The Sundara experience
+            The Blush Studio experience
           </p>
           <h2 className="mt-3 font-display text-3xl font-medium leading-tight tracking-tight text-ink md:text-[40px]">
             A better way to book your beauty time.

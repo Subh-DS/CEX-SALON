@@ -76,6 +76,24 @@ def _parse_clock(value: str) -> time:
         raise ApiError("INVALID_TIME", "Times must be HH:MM.", 422)
 
 
+async def _resolve_target(session: AsyncSession, user: dict, staff_id: str | None) -> str:
+    """Staff always act on themselves; admin must name a staffer via ?staff_id=."""
+    from app.models.users import StaffProfile
+
+    if user["role"] == "staff":
+        if staff_id and staff_id != user["id"]:
+            raise ApiError("FORBIDDEN", "You can only manage your own availability.", 403)
+        return user["id"]
+    if not staff_id:
+        raise ApiError("VALIDATION_ERROR", "Admins must pass ?staff_id= to manage availability.", 422)
+    exists = (
+        await session.execute(select(StaffProfile).where(StaffProfile.user_id == staff_id))
+    ).scalar_one_or_none()
+    if exists is None:
+        raise ApiError("NOT_FOUND", "Staff member not found.", 404)
+    return staff_id
+
+
 @router.get("/staff/availability")
 async def my_availability(
     staff_id: str | None = None,
@@ -83,11 +101,13 @@ async def my_availability(
     session: AsyncSession = Depends(session_dep),
 ):
     """Own weekly hours for staff; admin may pass ?staff_id= to inspect anyone."""
-    target = staff_id or user["id"]
-    if user["role"] == "staff" and target != user["id"]:
-        raise ApiError("FORBIDDEN", "You can only view your own availability.", 403)
-    if user["role"] not in ("staff", "admin"):
-        raise ApiError("FORBIDDEN", "Staff only.", 403)
+    target = await _resolve_target(session, user, staff_id) if user["role"] == "admin" and staff_id else None
+    if target is None:
+        target = staff_id or user["id"]
+        if user["role"] == "staff" and target != user["id"]:
+            raise ApiError("FORBIDDEN", "You can only view your own availability.", 403)
+        if user["role"] not in ("staff", "admin"):
+            raise ApiError("FORBIDDEN", "Staff only.", 403)
     rows = (
         await session.execute(
             select(StaffAvailability).where(StaffAvailability.staff_id == target).order_by(StaffAvailability.day_of_week)
@@ -108,9 +128,12 @@ async def my_availability(
 @router.put("/staff/availability")
 async def save_availability(
     payload: AvailabilityIn,
-    user: dict = Depends(require_role("staff")),
+    staff_id: str | None = None,
+    user: dict = Depends(require_role("staff", "admin")),
     session: AsyncSession = Depends(session_dep),
 ):
+    """Own hours for staff; admin may pass ?staff_id= to manage anyone."""
+    target = await _resolve_target(session, user, staff_id)
     for day in payload.days:
         start = _parse_clock(day.start_time)
         end = _parse_clock(day.end_time)
@@ -119,12 +142,12 @@ async def save_availability(
         row = (
             await session.execute(
                 select(StaffAvailability).where(
-                    StaffAvailability.staff_id == user["id"], StaffAvailability.day_of_week == day.day_of_week
+                    StaffAvailability.staff_id == target, StaffAvailability.day_of_week == day.day_of_week
                 )
             )
         ).scalar_one_or_none()
         if row is None:
-            row = StaffAvailability(staff_id=user["id"], day_of_week=day.day_of_week, start_time=start, end_time=end, is_active=day.is_active)
+            row = StaffAvailability(staff_id=target, day_of_week=day.day_of_week, start_time=start, end_time=end, is_active=day.is_active)
             session.add(row)
         else:
             row.start_time = start
@@ -136,12 +159,14 @@ async def save_availability(
 
 @router.get("/staff/blocks")
 async def my_blocks(
-    user: dict = Depends(require_role("staff")),
+    staff_id: str | None = None,
+    user: dict = Depends(require_role("staff", "admin")),
     session: AsyncSession = Depends(session_dep),
 ):
+    target = await _resolve_target(session, user, staff_id)
     rows = (
         await session.execute(
-            select(StaffBlock).where(StaffBlock.staff_id == user["id"]).order_by(StaffBlock.start_datetime)
+            select(StaffBlock).where(StaffBlock.staff_id == target).order_by(StaffBlock.start_datetime)
         )
     ).scalars().all()
     return ok(
@@ -155,9 +180,11 @@ async def my_blocks(
 @router.post("/staff/blocks")
 async def add_block(
     payload: BlockIn,
-    user: dict = Depends(require_role("staff")),
+    staff_id: str | None = None,
+    user: dict = Depends(require_role("staff", "admin")),
     session: AsyncSession = Depends(session_dep),
 ):
+    target = await _resolve_target(session, user, staff_id)
     try:
         start = datetime.fromisoformat(payload.start_datetime)
         end = datetime.fromisoformat(payload.end_datetime)
@@ -165,7 +192,7 @@ async def add_block(
         raise ApiError("INVALID_DATETIME", "Datetimes must be ISO format.", 422)
     if start >= end:
         raise ApiError("INVALID_DATETIME", "Start must be before end.", 422)
-    block = StaffBlock(staff_id=user["id"], start_datetime=start, end_datetime=end, reason=payload.reason)
+    block = StaffBlock(staff_id=target, start_datetime=start, end_datetime=end, reason=payload.reason)
     session.add(block)
     await session.commit()
     return ok({"id": str(block.id)})
@@ -174,11 +201,13 @@ async def add_block(
 @router.delete("/staff/blocks/{block_id}")
 async def remove_block(
     block_id: str,
-    user: dict = Depends(require_role("staff")),
+    staff_id: str | None = None,
+    user: dict = Depends(require_role("staff", "admin")),
     session: AsyncSession = Depends(session_dep),
 ):
+    target = await _resolve_target(session, user, staff_id)
     block = (
-        await session.execute(select(StaffBlock).where(StaffBlock.id == block_id, StaffBlock.staff_id == user["id"]))
+        await session.execute(select(StaffBlock).where(StaffBlock.id == block_id, StaffBlock.staff_id == target))
     ).scalar_one_or_none()
     if block is None:
         raise ApiError("NOT_FOUND", "Time off entry not found.", 404)

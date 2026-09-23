@@ -14,14 +14,79 @@ from app.services.booking_service import create_booking
 router = APIRouter(prefix="/bookings", tags=["bookings"])
 
 
-async def _serialize(session: AsyncSession, booking: Booking, include_customer: bool = False) -> dict:
-    items = (
-        await session.execute(select(BookingItem).where(BookingItem.booking_id == booking.id))
+class _Preload:
+    """One batched pass over related rows so list endpoints stay O(1) queries."""
+
+    def __init__(self) -> None:
+        self.items: dict = {}
+        self.services: dict = {}
+        self.staff: dict = {}
+        self.branches: dict = {}
+        self.payments: set = set()
+        self.users: dict = {}
+        self.profiles: dict = {}
+        self.history: dict = {}
+
+
+async def _preload(session: AsyncSession, bookings: list[Booking], include_customer: bool) -> _Preload:
+    pre = _Preload()
+    if not bookings:
+        return pre
+    ids = [b.id for b in bookings]
+
+    all_items = (
+        await session.execute(select(BookingItem).where(BookingItem.booking_id.in_(ids)))
     ).scalars().all()
+    for bi in all_items:
+        pre.items.setdefault(bi.booking_id, []).append(bi)
+
+    svc_ids = list({bi.service_id for bi in all_items})
+    if svc_ids:
+        for svc in (await session.execute(select(Service).where(Service.id.in_(svc_ids)))).scalars().all():
+            pre.services[svc.id] = svc
+    staff_ids = list({bi.staff_id for bi in all_items})
+    if staff_ids:
+        for st in (await session.execute(select(StaffProfile).where(StaffProfile.user_id.in_(staff_ids)))).scalars().all():
+            pre.staff[st.user_id] = st
+
+    branch_ids = list({b.branch_id for b in bookings if b.branch_id})
+    if branch_ids:
+        for br in (await session.execute(select(Branch).where(Branch.id.in_(branch_ids)))).scalars().all():
+            pre.branches[br.id] = br
+
+    paid_rows = (
+        await session.execute(
+            select(Payment.booking_id).where(Payment.booking_id.in_(ids), Payment.status == "completed")
+        )
+    ).all()
+    pre.payments = {r[0] for r in paid_rows}
+
+    if include_customer:
+        cust_ids = list({b.customer_id for b in bookings})
+        for u in (await session.execute(select(User).where(User.id.in_(cust_ids)))).scalars().all():
+            pre.users[u.id] = u
+        for p in (await session.execute(select(CustomerProfile).where(CustomerProfile.user_id.in_(cust_ids)))).scalars().all():
+            pre.profiles[p.user_id] = p
+        for h in (
+            await session.execute(
+                select(BookingStatusHistory)
+                .where(BookingStatusHistory.booking_id.in_(ids))
+                .order_by(BookingStatusHistory.created_at)
+            )
+        ).scalars().all():
+            pre.history.setdefault(h.booking_id, []).append(h)
+    return pre
+
+
+def _serialize_one(booking: Booking, pre: _Preload, include_customer: bool = False) -> dict:
     out = []
-    for bi in items:
-        svc = (await session.execute(select(Service).where(Service.id == bi.service_id))).scalar_one()
-        st = (await session.execute(select(StaffProfile).where(StaffProfile.user_id == bi.staff_id))).scalar_one()
+    for bi in pre.items.get(booking.id, []):
+        svc = pre.services.get(bi.service_id)
+        if svc is None:
+            raise ApiError("NOT_FOUND", "A service on this booking is no longer available.", 404)
+        st = pre.staff.get(bi.staff_id)
+        if st is None:
+            raise ApiError("NOT_FOUND", "An expert on this booking is no longer available.", 404)
         out.append(
             {
                 "id": str(bi.id),
@@ -37,44 +102,38 @@ async def _serialize(session: AsyncSession, booking: Booking, include_customer: 
             }
         )
     branch_name = None
-    if booking.branch_id:
-        branch = (await session.execute(select(Branch).where(Branch.id == booking.branch_id))).scalar_one_or_none()
-        if branch:
-            branch_name = f"{branch.name}, {branch.city}"
-    paid = (
-        await session.execute(
-            select(Payment).where(Payment.booking_id == booking.id, Payment.status == "completed")
-        )
-    ).scalar_one_or_none() is not None
+    if booking.branch_id and booking.branch_id in pre.branches:
+        br = pre.branches[booking.branch_id]
+        branch_name = f"{br.name}, {br.city}"
     out_booking = {
         "id": str(booking.id),
         "booking_number": booking.booking_number,
         "status": booking.status,
         "total_amount": float(booking.total_amount),
+        "discount_amount": float(booking.discount_amount or 0),
+        "coupon_code": booking.coupon_code,
         "notes": booking.notes,
         "items": out,
         "branch_name": branch_name,
-        "paid": paid,
+        "paid": booking.id in pre.payments,
     }
     if include_customer:
-        cust = (await session.execute(select(User).where(User.id == booking.customer_id))).scalar_one_or_none()
-        prof = (
-            await session.execute(select(CustomerProfile).where(CustomerProfile.user_id == booking.customer_id))
-        ).scalar_one_or_none()
+        cust = pre.users.get(booking.customer_id)
+        prof = pre.profiles.get(booking.customer_id)
         out_booking["customer_id"] = str(booking.customer_id)
         out_booking["customer_name"] = prof.name if prof else (cust.email if cust else "")
         out_booking["customer_phone"] = cust.phone if cust else None
         out_booking["customer_notes"] = prof.notes if prof else None
-        history = (
-            await session.execute(
-                select(BookingStatusHistory).where(BookingStatusHistory.booking_id == booking.id).order_by(BookingStatusHistory.created_at)
-            )
-        ).scalars().all()
         out_booking["status_history"] = [
             {"status": h.status, "reason": h.reason, "created_at": h.created_at.isoformat() if h.created_at else None}
-            for h in history
+            for h in pre.history.get(booking.id, [])
         ]
     return out_booking
+
+
+async def _serialize(session: AsyncSession, booking: Booking, include_customer: bool = False) -> dict:
+    pre = await _preload(session, [booking], include_customer)
+    return _serialize_one(booking, pre, include_customer)
 
 
 @router.post("")
@@ -100,12 +159,14 @@ async def my_bookings(
             .join(BookingItem, BookingItem.booking_id == Booking.id)
             .where(BookingItem.staff_id == user["id"])
             .order_by(Booking.created_at.desc())
+            .distinct()
         )
     else:
         q = select(Booking).where(Booking.customer_id == user["id"]).order_by(Booking.created_at.desc())
     rows = (await session.execute(q)).scalars().all()
     include = user["role"] in ("staff", "admin")
-    return ok([await _serialize(session, b, include_customer=include) for b in rows])
+    pre = await _preload(session, list(rows), include)
+    return ok([_serialize_one(b, pre, include_customer=include) for b in rows])
 
 
 @router.get("/{booking_id}")

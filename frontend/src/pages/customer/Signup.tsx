@@ -30,7 +30,7 @@ export default function Signup() {
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="font-display text-3xl">Join Sundara</h1>
+      <h1 className="font-display text-3xl">Join The Blush Studio</h1>
       <p className="mt-1 text-mutedbrown">Book faster and earn Glow points on every visit.</p>
       <Card className="mt-6">
         <form onSubmit={onSubmit} className="space-y-4">

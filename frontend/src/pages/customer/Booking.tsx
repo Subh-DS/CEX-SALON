@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Stepper, { STEP_HEADINGS } from "@/components/booking/Stepper";
 import StepService from "@/components/booking/StepService";
@@ -41,6 +41,27 @@ export default function Booking() {
   const service = services?.find((s) => s.id === serviceId);
   const staff = staffList?.find((s) => s.id === staffId);
 
+  // A reservation already exists — changing any selection invalidates it so
+  // continuing again can't silently double-book.
+  useEffect(() => {
+    if (!booking) return;
+    const item = booking.items[0];
+    const sameSlot = !!slot && !!item && item.start_time.startsWith(`${date}T${slot}`);
+    if (!item || item.service_id !== serviceId || item.staff_id !== staffId || !sameSlot) {
+      setBooking(null);
+    }
+  }, [booking, serviceId, staffId, date, slot]);
+
+  // Keep a deep-linked expert when possible; clear with notice if they
+  // don't offer the newly chosen service.
+  useEffect(() => {
+    if (!staffId || !staffList) return;
+    if (!staffList.some((s) => s.id === staffId)) {
+      setStaffId(null);
+      setProblem("Your previously chosen expert doesn't offer this service — please pick another.");
+    }
+  }, [staffList, staffId]);
+
   const canNext =
     (step === 0 && !!serviceId) ||
     (step === 1 && !!staffId) ||
@@ -57,6 +78,11 @@ export default function Booking() {
       return;
     }
     if (!serviceId || !staffId || !slot || !date) return;
+    if (booking) {
+      // Reservation from this flow still matches the selections — reuse it.
+      setStep(5);
+      return;
+    }
     try {
       const created = await create.mutateAsync({
         items: [{ service_id: serviceId, staff_id: staffId, start_time: `${date}T${slot}:00+00:00` }],
@@ -109,7 +135,7 @@ export default function Booking() {
             <div className="sticky top-24 space-y-6">
               <SmartImage
                 src={(serviceId && SERVICE_IMAGES[serviceId]) || HERO_IMAGE}
-                alt={service ? service.name : "Inside the Sundara salon"}
+                alt={service ? service.name : "Inside The Blush Studio"}
                 className="aspect-[4/3] w-full"
               />
               <p className="font-display text-xl italic text-ink/70">
@@ -140,7 +166,7 @@ export default function Booking() {
               </p>
             )}
 
-            {step === 0 && <StepService selected={serviceId} onSelect={(id) => { setServiceId(id); setStaffId(null); }} />}
+            {step === 0 && <StepService selected={serviceId} onSelect={(id) => { setServiceId(id); }} />}
             {step === 1 && serviceId && (
               <StepStaff serviceId={serviceId} serviceName={service?.name} selected={staffId} onSelect={setStaffId} />
             )}
@@ -162,10 +188,13 @@ export default function Booking() {
             {step === 5 && (
               <StepPayment
                 bookingId={booking?.id ?? null}
+                bookingNumber={booking?.booking_number ?? null}
                 service={service}
                 staff={staff}
+                date={date}
+                slot={slot}
                 onPaid={(info) =>
-                  setConfirmed(booking ? { ...booking, booking_number: info.booking_number } : null)
+                  setConfirmed(booking ? { ...booking, booking_number: info.booking_number ?? booking.booking_number } : null)
                 }
               />
             )}
@@ -199,10 +228,7 @@ export default function Booking() {
             {step === 5 && (
               <div className="mt-8 hidden lg:block">
                 <button
-                  onClick={() => {
-                    setStep(4);
-                    setBooking(null);
-                  }}
+                  onClick={() => setStep(4)}
                   className="inline-flex min-h-[52px] items-center border border-ink/25 px-7 font-accent text-[15px] font-semibold text-ink hover:border-ink"
                 >
                   ← Back to review

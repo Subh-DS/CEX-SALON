@@ -4,12 +4,20 @@ from tests.conftest import TestSession
 
 
 async def _ensure_admin():
+    from app.models.loyalty import LoyaltyAccount
+    from app.models.users import CustomerProfile
+
     async with TestSession() as s:
         from sqlalchemy import select
 
         existing = (await s.execute(select(User).where(User.email == "admin@sundara.in"))).scalar_one_or_none()
         if existing is None:
-            s.add(User(email="admin@sundara.in", password_hash=hash_password("admin1234"), role="admin"))
+            admin = User(email="admin@sundara.in", password_hash=hash_password("admin1234"), role="admin")
+            s.add(admin)
+            await s.flush()
+            # Mirror the register invariant: every user gets profile + loyalty rows.
+            s.add(CustomerProfile(user_id=admin.id, name="Admin"))
+            s.add(LoyaltyAccount(user_id=admin.id))
             await s.commit()
 
 

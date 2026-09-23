@@ -68,13 +68,18 @@ export interface PayResult {
   booking_number: string;
   status: string;
   amount: number;
+  discount: number;
+  coupon_code: string | null;
 }
 
 export function usePayBooking() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (booking_id: string) =>
-      apiFetch<PayResult>("/payments", { method: "POST", body: JSON.stringify({ booking_id }) }),
+    mutationFn: ({ booking_id, coupon_code }: { booking_id: string; coupon_code?: string }) =>
+      apiFetch<PayResult>("/payments", {
+        method: "POST",
+        body: JSON.stringify({ booking_id, coupon_code: coupon_code ?? undefined }),
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["bookings"] }),
   });
 }

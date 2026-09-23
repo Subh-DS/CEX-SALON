@@ -127,7 +127,9 @@ async def reschedule(
             raise ApiError("INVALID_TIME", "Please choose a future time.", 422)
         service = (
             await session.execute(select(Service).where(Service.id == bi.service_id))
-        ).scalar_one()
+        ).scalar_one_or_none()
+        if service is None:
+            raise ApiError("NOT_FOUND", "A service on this booking is no longer available.", 404)
         end = start + timedelta(minutes=service.duration_minutes)
 
         hours = await repo.working_hours(session, str(bi.staff_id), start.weekday())

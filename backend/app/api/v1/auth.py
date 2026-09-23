@@ -62,7 +62,14 @@ async def refresh(payload: RefreshRequest, session: AsyncSession = Depends(sessi
     user = (await session.execute(select(User).where(User.id == data["sub"]))).scalar_one_or_none()
     if user is None or not user.is_active:
         raise ApiError("INVALID_TOKEN", "Session expired. Please log in again.", 401)
-    return ok({"access_token": create_access_token(str(user.id), user.role)})
+    # Rotation: every refresh mints a fresh pair. The previous refresh token stays
+    # valid until its own expiry (no server-side revocation list in this stage).
+    return ok(
+        {
+            "access_token": create_access_token(str(user.id), user.role),
+            "refresh_token": create_refresh_token(str(user.id)),
+        }
+    )
 
 
 @router.get("/me")

@@ -11,12 +11,24 @@ from app.models.bookings import Booking, BookingItem, Payment
 from app.models.loyalty import LoyaltyAccount, LoyaltyTransaction, Review, Reward
 from app.models.salon import Service, ServiceCategory
 from app.models.users import CustomerProfile, User
-from app.schemas.admin import NotesIn, RewardIn, ServiceIn
+from app.schemas.admin import NotesIn, RewardIn, ServiceIn, StaffIn
+from app.services.ops import create_staff
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 admin_only = require_role("admin")
 ops_roles = require_role("admin", "staff")
+
+
+@router.post("/staff", status_code=201)
+async def create_staff_member(
+    payload: StaffIn,
+    user: dict = Depends(admin_only),
+    session: AsyncSession = Depends(session_dep),
+):
+    """Provision a staff login + profile (needed for deploys; register only makes customers)."""
+    created = await create_staff(session, payload)
+    return ok({"id": str(created.id), "email": created.email, "role": created.role})
 
 
 @router.get("/overview")
@@ -146,12 +158,16 @@ async def customers(
         )
     ).all()
     out = []
-    for u, p, acct in rows:
-        booking_count = (
+    counts = dict(
+        (
             await session.execute(
-                select(func.count()).select_from(Booking).where(Booking.customer_id == u.id)
+                select(Booking.customer_id, func.count())
+                .where(Booking.customer_id.in_([u.id for u, _, _ in rows]))
+                .group_by(Booking.customer_id)
             )
-        ).scalar() or 0
+        ).all()
+    )
+    for u, p, acct in rows:
         out.append(
             {
                 "id": str(u.id),
@@ -159,7 +175,7 @@ async def customers(
                 "phone": u.phone,
                 "name": p.name if p else u.email,
                 "notes": p.notes if p else None,
-                "bookings": booking_count,
+                "bookings": counts.get(u.id, 0),
                 "points": acct.points_balance if acct else 0,
                 "tier": acct.tier if acct else None,
             }
@@ -226,13 +242,18 @@ async def customer_activity(
             select(RewardRedemption).where(RewardRedemption.user_id == customer_id).order_by(RewardRedemption.created_at.desc()).limit(20)
         )
     ).scalars().all()
+    reward_names = {}
+    if reds:
+        for rw in (
+            await session.execute(select(Reward).where(Reward.id.in_([r.reward_id for r in reds])))
+        ).scalars().all():
+            reward_names[rw.id] = rw.name
     out_reds = []
     for r in reds:
-        reward = (await session.execute(select(Reward).where(Reward.id == r.reward_id))).scalar_one_or_none()
         out_reds.append(
             {
                 "id": str(r.id),
-                "reward": reward.name if reward else "Reward",
+                "reward": reward_names.get(r.reward_id, "Reward"),
                 "points_spent": r.points_spent,
                 "code": r.code,
                 "status": r.status,
@@ -262,15 +283,22 @@ async def all_reviews(
     session: AsyncSession = Depends(session_dep),
 ):
     rows = (await session.execute(select(Review).order_by(Review.created_at.desc()).limit(200))).scalars().all()
+    bookings_by_id = {}
+    if rows:
+        for b in (
+            await session.execute(select(Booking).where(Booking.id.in_([r.booking_id for r in rows])))
+        ).scalars().all():
+            bookings_by_id[b.id] = b
+    names = {}
+    cust_ids = list({b.customer_id for b in bookings_by_id.values()})
+    if cust_ids:
+        for p in (
+            await session.execute(select(CustomerProfile).where(CustomerProfile.user_id.in_(cust_ids)))
+        ).scalars().all():
+            names[p.user_id] = p.name
     out = []
     for r in rows:
-        booking = (await session.execute(select(Booking).where(Booking.id == r.booking_id))).scalar_one_or_none()
-        customer = None
-        if booking:
-            prof = (
-                await session.execute(select(CustomerProfile).where(CustomerProfile.user_id == booking.customer_id))
-            ).scalar_one_or_none()
-            customer = prof.name if prof else None
+        booking = bookings_by_id.get(r.booking_id)
         out.append(
             {
                 "id": str(r.id),
@@ -278,7 +306,7 @@ async def all_reviews(
                 "stylist_rating": r.stylist_rating,
                 "comment": r.comment,
                 "tags": r.tags,
-                "customer": customer,
+                "customer": names.get(booking.customer_id) if booking else None,
                 "created_at": r.created_at.isoformat() if r.created_at else None,
             }
         )

@@ -19,6 +19,8 @@ class Booking(Base, TimestampMixin):
     branch_id: Mapped[uuid.UUID | None] = mapped_column(GUID(), ForeignKey("branches.id"), nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
     total_amount: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
+    coupon_code: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    discount_amount: Mapped[float] = mapped_column(Numeric(10, 2), default=0)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 

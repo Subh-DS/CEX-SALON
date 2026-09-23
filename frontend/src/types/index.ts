@@ -65,6 +65,8 @@ export interface Booking {
   customer_phone?: string | null;
   customer_notes?: string | null;
   status_history?: StatusHistoryEntry[];
+  discount_amount?: number;
+  coupon_code?: string | null;
 }
 
 export interface ReviewRef {

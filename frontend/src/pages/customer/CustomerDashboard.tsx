@@ -90,7 +90,7 @@ export default function CustomerDashboard() {
     <div className="mx-auto max-w-3xl">
       <p className="font-accent text-xs font-bold uppercase tracking-[0.2em] text-primary">My visits</p>
       <h1 className="mt-2 font-display text-[34px] font-medium tracking-tight text-ink">
-        Your time at Sundara.
+        Your time at The Blush Studio.
       </h1>
 
       <VisitsSummary

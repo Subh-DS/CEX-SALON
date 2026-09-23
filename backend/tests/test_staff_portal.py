@@ -14,7 +14,10 @@ async def _kabir_headers(client):
 
 
 async def _admin_headers(client):
-    await client.post("/api/v1/auth/signup", json={"email": "admin@sundara.in", "password": "x"})
+    await client.post(
+        "/api/v1/auth/register",
+        json={"name": "Admin", "email": "admin@sundara.in", "password": "admin1234valid"},
+    )
     r = await client.post("/api/v1/auth/login", json={"email": "admin@sundara.in", "password": "admin1234"})
     assert r.status_code == 200, r.text
     return {"Authorization": f"Bearer {r.json()['data']['access_token']}"}

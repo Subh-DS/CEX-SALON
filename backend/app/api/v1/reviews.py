@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, require_role
 from app.core.errors import ApiError, ok
 from app.db.session import get_session as session_dep
 from app.models.bookings import Booking
@@ -25,7 +25,7 @@ class ReviewCreate(BaseModel):
 @router.post("")
 async def create_review(
     payload: ReviewCreate,
-    user: dict = Depends(get_current_user),
+    user: dict = Depends(require_role("customer")),
     session: AsyncSession = Depends(session_dep),
 ):
     booking = (
@@ -33,7 +33,7 @@ async def create_review(
     ).scalar_one_or_none()
     if booking is None:
         raise ApiError("NOT_FOUND", "Booking not found.", 404)
-    if user["role"] == "customer" and str(booking.customer_id) != user["id"]:
+    if str(booking.customer_id) != user["id"]:
         raise ApiError("FORBIDDEN", "You can't review this visit.", 403)
     if booking.status != "completed":
         raise ApiError("INVALID_STATUS", "Only completed visits can be reviewed.", 422)
@@ -62,11 +62,9 @@ async def create_review(
     )
     session.add(review)
     await session.flush()  # populate review.id for the idempotent bonus reference
-    points_awarded = 0
-    if user["role"] == "customer":
-        from app.services.loyalty_service import award_review_bonus
+    from app.services.loyalty_service import award_review_bonus
 
-        points_awarded = await award_review_bonus(session, user["id"], review)
+    points_awarded = await award_review_bonus(session, user["id"], review)
     await session.commit()
     return ok({"id": str(review.id), "booking_id": str(booking.id), "rating": review.rating, "points_awarded": points_awarded})
 

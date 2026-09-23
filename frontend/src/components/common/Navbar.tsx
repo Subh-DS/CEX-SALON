@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
+import BrandLogo from "@/components/common/BrandLogo";
 
 const links = [
   { to: "/", label: "Home" },
@@ -31,9 +32,8 @@ export default function Navbar() {
   return (
     <header className="border-b border-ink/10 bg-ivory">
       <nav className="mx-auto flex min-h-[76px] max-w-6xl items-center justify-between gap-6 px-4 md:px-6" aria-label="Primary">
-        <Link to="/" className="leading-none">
-          <span className="font-display text-[26px] font-semibold tracking-tight text-ink">Sundara</span>
-          <span className="ml-2 font-devanagari text-base text-rose">सुन्दरा</span>
+        <Link to="/" className="leading-none" aria-label="The Blush Studio — home">
+          <BrandLogo size="sm" />
         </Link>
 
         <div className="hidden items-center gap-8 lg:flex">

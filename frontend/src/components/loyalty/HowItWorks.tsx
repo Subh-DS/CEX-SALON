@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 const STEPS = [
-  { n: "01", title: "Visit Sundara", text: "Earn 1 Glow Point for every ₹10 you spend on completed visits." },
+  { n: "01", title: "Visit The Blush Studio", text: "Earn 1 Glow Point for every ₹10 you spend on completed visits." },
   { n: "02", title: "Keep glowing", text: "Reviews and referrals add points too — every activity is recorded openly." },
   { n: "03", title: "Use your points", text: "Redeem rewards on future visits. Every activity is recorded openly." },
 ];

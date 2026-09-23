@@ -18,7 +18,7 @@ export default function Interior() {
             Come in, take your time.
           </h2>
           <p className="mt-4 max-w-sm text-[16px] leading-relaxed text-ink/70">
-            Sundara is designed to feel calm from the moment you walk through
+            The Blush Studio is designed to feel calm from the moment you walk through
             the door — warm light, quiet chairs, no rush.
           </p>
           <p className="mt-5 font-accent text-sm text-ink/55">Patia, Bhubaneswar</p>
@@ -32,7 +32,7 @@ export default function Interior() {
         >
           <SmartImage
             src={INTERIOR_IMAGE}
-            alt="Inside the Sundara salon in Patia"
+            alt="Inside The Blush Studio in Patia"
             className="aspect-[16/10] w-full rounded-[6px]"
           />
         </motion.div>

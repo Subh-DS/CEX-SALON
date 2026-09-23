@@ -23,7 +23,7 @@ async def seed() -> None:
             print("Seed already present, skipping.")
             return
 
-        salon = Salon(name="Sundara Flagship", description="Contemporary Indian premium beauty")
+        salon = Salon(name="The Blush Studio Flagship", description="Contemporary Indian premium beauty")
         s.add(salon)
         await s.flush()
         branch = Branch(salon_id=salon.id, name="Patia, Bhubaneswar", address="Plot 12, Patia", city="Bhubaneswar", phone="+91 674 000 0000")

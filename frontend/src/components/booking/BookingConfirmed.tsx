@@ -6,6 +6,15 @@ import type { Booking } from "@/types";
 
 export default function BookingConfirmed({ booking }: { booking: Booking }) {
   const item = booking.items[0];
+  if (!item) {
+    return (
+      <div className="mx-auto max-w-xl text-center">
+        <p role="alert" className="rounded-md bg-[#f7e8e8] px-4 py-3 text-sm text-[#b84444]">
+          Your booking was confirmed, but we couldn&apos;t load its details. Check My Visits for the full summary.
+        </p>
+      </div>
+    );
+  }
   const when = parseVisitDate(item.start_time);
   return (
     <motion.div
@@ -39,8 +48,14 @@ export default function BookingConfirmed({ booking }: { booking: Booking }) {
           <dt className="text-ink/55">Where</dt>
           <dd className="font-semibold text-ink">{booking.branch_name ?? "Patia, Bhubaneswar"}</dd>
         </div>
+        {(booking.discount_amount ?? 0) > 0 && (
+          <div className="flex justify-between py-1.5 text-[15px]">
+            <dt className="text-ink/55">Discount{booking.coupon_code ? ` (${booking.coupon_code})` : ""}</dt>
+            <dd className="font-semibold text-leafgreen">−{formatINR(booking.discount_amount ?? 0)}</dd>
+          </div>
+        )}
         <div className="flex justify-between py-1.5 text-[15px]">
-          <dt className="text-ink/55">Total paid</dt>
+          <dt className="text-ink/55">{booking.paid ? "Total paid" : "Total due at salon"}</dt>
           <dd className="font-semibold text-ink">{formatINR(booking.total_amount)}</dd>
         </div>
         <div className="flex justify-between py-1.5 text-[15px]">

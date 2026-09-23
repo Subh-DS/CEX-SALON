@@ -1,6 +1,6 @@
 """Admin + staff operations: analytics, customer notes, catalog/loyalty management."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class NotesIn(BaseModel):
@@ -38,3 +38,12 @@ class BlockIn(BaseModel):
     start_datetime: str
     end_datetime: str
     reason: str | None = Field(default=None, max_length=255)
+
+
+class StaffIn(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+    phone: str | None = Field(default=None, max_length=20)
+    specialties: list[str] = Field(default_factory=list)
+    experience_years: int = Field(default=0, ge=0, le=60)

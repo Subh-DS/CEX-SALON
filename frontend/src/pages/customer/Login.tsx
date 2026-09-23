@@ -143,7 +143,7 @@ export default function Login() {
             )}
 
             <p className="mt-6 text-[15px] text-ink/65">
-              New to Sundara?{" "}
+              New to The Blush Studio?{" "}
               <Link to="/signup" className="font-semibold text-primary underline-offset-4 hover:underline">
                 Create an account →
               </Link>

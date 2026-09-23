@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import BrandLogo from "@/components/common/BrandLogo";
 
 const TABS = [
   ["", "Dashboard"],
@@ -20,9 +21,8 @@ export default function StaffLayout() {
   const active = loc.pathname.replace(/\/staff\/?/, "").split("/")[0];
   const name = (user?.email ?? "staff").split("@")[0].replace(/^\w/, (c) => c.toUpperCase());
 
-  function go(to: string) {
+  function closeMenu() {
     setOpen(false);
-    nav(to);
   }
 
   const links = (
@@ -31,9 +31,10 @@ export default function StaffLayout() {
         const href = to ? `/staff/${to}` : "/staff";
         const isActive = active === to;
         return (
-          <button
+          <Link
             key={to}
-            onClick={() => go(href)}
+            to={href}
+            onClick={closeMenu}
             aria-current={isActive ? "page" : undefined}
             className={`flex min-h-[48px] w-full items-center px-5 font-accent text-[15px] font-semibold md:border-l-2 ${
               isActive
@@ -42,7 +43,7 @@ export default function StaffLayout() {
             }`}
           >
             {label}
-          </button>
+          </Link>
         );
       })}
     </>
@@ -61,7 +62,10 @@ export default function StaffLayout() {
             >
               {open ? "✕" : "☰"}
             </button>
-            <Link to="/staff" className="font-display text-xl">Sundara · Staff</Link>
+            <Link to="/staff" className="flex items-center gap-2.5" aria-label="The Blush Studio staff home">
+              <BrandLogo variant="light" size="sm" />
+              <span className="font-accent text-sm font-semibold text-ivory/70">· Staff</span>
+            </Link>
           </p>
           <p className="flex items-center gap-4 text-sm">
             <span className="hidden text-ivory/70 sm:inline">{name}</span>

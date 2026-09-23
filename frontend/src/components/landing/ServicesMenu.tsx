@@ -99,7 +99,7 @@ export default function ServicesMenu() {
                     <span className="block h-[72px] w-[96px] shrink-0 overflow-hidden rounded-[4px]">
                       <SmartImage
                         src={serviceImage(s)}
-                        alt={`${s.name} at Sundara`}
+                        alt={`${s.name} at The Blush Studio`}
                         className="h-full w-full"
                         imgClassName="transition-transform duration-300 ease-out group-hover:scale-[1.04]"
                       />

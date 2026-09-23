@@ -1,11 +1,11 @@
-/* Sundara Design Tokens — Stage 1
+/* The Blush Studio Design Tokens — Stage 1
  * Single source of truth. Tailwind config (Stage 2) will reference these values.
  * Palette: Warm Sandstone. See decision.md §Color System.
  */
 
 :root {
   /* ---- Brand ---- */
-  --brand-name: "Sundara";
+  --brand-name: "The Blush Studio";
   --brand-tagline: "Your beauty, your time.";
 
   /* ---- Colors ---- */

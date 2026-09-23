@@ -16,6 +16,7 @@ router = APIRouter(prefix="/payments", tags=["payments"])
 class PayRequest(BaseModel):
     booking_id: str
     method: str = "mock"
+    coupon_code: str | None = None
 
 
 @router.post("")
@@ -33,6 +34,8 @@ async def pay(
         raise ApiError("FORBIDDEN", "You can't pay for this booking.", 403)
     if booking.status == "cancelled":
         raise ApiError("INVALID_STATUS", "Can't pay for a cancelled booking.", 422)
+    if booking.status in ("completed", "no_show"):
+        raise ApiError("INVALID_STATUS", f"Can't pay for a {booking.status.replace('_', ' ')} booking.", 422)
 
     existing = (
         await session.execute(select(Payment).where(Payment.booking_id == booking.id))
@@ -40,12 +43,17 @@ async def pay(
     if existing and existing.status == "completed":
         raise ApiError("ALREADY_PAID", "This booking is already paid.", 409)
 
+    from app.services.coupons import discount_for
+
+    _, discount = discount_for(payload.coupon_code, float(booking.total_amount or 0))
+    net = round(float(booking.total_amount or 0) - discount, 2)
+
     # Mock provider: always succeeds. Real Razorpay verification lands in Stage 9.
     now = datetime.now(timezone.utc)
     if existing is None:
         payment = Payment(
             booking_id=booking.id,
-            amount=booking.total_amount,
+            amount=net,
             method="mock",
             status="completed",
             transaction_id=f"MOCK-{booking.booking_number}",
@@ -53,9 +61,15 @@ async def pay(
         )
         session.add(payment)
     else:
+        existing.amount = net
         existing.status = "completed"
-        existing.transaction_id = f"MOCK-{booking.booking_number}"
+        # Keep the first transaction id so retries stay idempotent.
+        if not existing.transaction_id:
+            existing.transaction_id = f"MOCK-{booking.booking_number}"
         existing.paid_at = now
+
+    booking.coupon_code = (payload.coupon_code or "").strip().upper() or None
+    booking.discount_amount = discount
 
     if booking.status == "pending":
         booking.status = "confirmed"
@@ -74,6 +88,8 @@ async def pay(
             "booking_id": str(booking.id),
             "booking_number": booking.booking_number,
             "status": booking.status,
-            "amount": float(booking.total_amount),
+            "amount": net,
+            "discount": discount,
+            "coupon_code": booking.coupon_code,
         }
     )

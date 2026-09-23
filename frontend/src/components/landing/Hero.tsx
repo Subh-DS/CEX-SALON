@@ -51,7 +51,7 @@ export default function Hero() {
         >
           <SmartImage
             src={HERO_IMAGE}
-            alt="Guest with fresh styling at Sundara, Patia"
+            alt="Guest with fresh styling at The Blush Studio, Patia"
             eager
             className="aspect-[16/10] w-full rounded-[6px] md:aspect-[16/10]"
           />

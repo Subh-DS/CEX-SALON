@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#f9ecea"/>
+  <g fill="#a2595f" text-anchor="middle" font-family="Didot, 'Playfair Display', Georgia, serif">
+    <text x="262" y="170" font-size="34" letter-spacing="18" font-family="Inter, system-ui, sans-serif">THE</text>
+    <text x="256" y="300" font-size="118" font-weight="300" letter-spacing="6"><tspan font-style="italic" font-weight="500">B</tspan>LUSH</text>
+    <line x1="96" y1="352" x2="196" y2="352" stroke="#a2595f" stroke-width="3"/>
+    <line x1="316" y1="352" x2="416" y2="352" stroke="#a2595f" stroke-width="3"/>
+    <text x="258" y="365" font-size="34" letter-spacing="14" font-family="Inter, system-ui, sans-serif">STUDIO</text>
+  </g>
+</svg>

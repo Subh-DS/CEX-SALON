@@ -1,4 +1,4 @@
-# Sundara — Salon Booking & Loyalty Platform
+# The Blush Studio — Salon Booking & Loyalty Platform
 
 > **"Your beauty, your time."** — Contemporary Indian premium beauty, booking to loyalty.
 

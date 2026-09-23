@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Build output (regenerate with `npm run build`)
+frontend/dist/
+
+# Local databases (recreate via alembic + seeds)
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment — never commit real values (see .env.example)
+.env
+backend/.env
+frontend/.env
+
+# Test / tool caches
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Session / audit notes — local working docs, not part of the product
+bug-report.md
+decision.md
+flow.md
+product-flow.md
+staff-console-audit.md
+staff-flow.md
+touchpoint-audit.md
+ppt-content.md
+sppt.md
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

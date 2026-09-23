@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import BrandLogo from "@/components/common/BrandLogo";
 
 export default function Footer() {
   return (
@@ -6,10 +7,7 @@ export default function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-12 md:px-6">
         <div className="grid gap-12 md:grid-cols-[1.2fr_1fr_1fr_1fr_1fr]">
           <div>
-            <p className="leading-none">
-              <span className="font-display text-3xl font-semibold tracking-tight">Sundara</span>
-              <span className="ml-2 font-devanagari text-lg text-ivory/60">सुन्दरा</span>
-            </p>
+            <BrandLogo variant="light" size="md" className="items-start" />
             <p className="mt-4 max-w-xs text-[15px] leading-relaxed text-ivory/65">
               A contemporary salon in Patia, Bhubaneswar. Book in minutes, come
               back when you're ready.
@@ -50,7 +48,7 @@ export default function Footer() {
           </nav>
         </div>
         <div className="mt-14 flex flex-col gap-3 border-t border-ivory/15 pt-6 font-accent text-[13px] text-ivory/50 md:flex-row md:items-center md:justify-between">
-          <p>Sundara · Your beauty, your time · Crafted in Bhubaneswar</p>
+          <p>The Blush Studio · Your beauty, your time · Crafted in Bhubaneswar</p>
         </div>
       </div>
     </footer>
