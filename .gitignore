@@ -39,3 +39,6 @@ sppt.md
 Thumbs.db
 .vscode/
 .idea/
+
+# Word temp files
+~$*.docx
