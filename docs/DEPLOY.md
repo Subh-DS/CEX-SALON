@@ -38,13 +38,23 @@ Serve `dist/` statically. Client defaults to `http://localhost:8000/api/v1` when
 | `ADMIN_EMAIL` | `owner@example.com` | First-admin bootstrap on boot |
 | `VITE_API_BASE_URL` | `https://<api>/api/v1` | Baked in at frontend **build** time |
 
-## 4. Post-deploy checklist
+## 4. Post-deploy checklist (Render shell, in this order)
 
-1. Register the owner account in the app → restart API once with `ADMIN_EMAIL` (or set before first boot).
-2. As admin: `POST /admin/staff` to provision stylists (register only makes customers).
-3. As admin: create services + rewards in the Admin console (tiers auto-seed; rewards start empty).
-4. Staff sign in → set weekly hours + blocks → test book → pay → complete → loyalty.
-5. Do NOT run `seed_dev.py` on prod (demo data). Do NOT commit `.env` (gitignored).
+1. `alembic upgrade head` — creates/migrates all tables (fixes empty-DB 500s).
+2. `python -m seeds.seed_demo` — idempotent demo content (safe to re-run).
+3. Register the owner account in the app, set `ADMIN_EMAIL` to it, restart API once.
+4. As admin: `POST /admin/staff` for stylists (register only makes customers).
+5. As admin: create services + rewards in the Admin console (tiers auto-seed; rewards beyond demo ones are manual).
+6. Staff sign in → set weekly hours + blocks → test book → pay → complete → loyalty.
+7. Do NOT run `seed_dev.py` on prod (dev fixture data). Do NOT commit `.env` (gitignored).
+
+### Demo login for evaluators (works after steps 1–2)
+
+| Role | Email | Password | Notes |
+|---|---|---|---|
+| Customer | `demo@blushstudio.in` | `demo1234` | 500 pts, Bloom tier, can redeem demo rewards |
+| Staff | `ananya@blushstudio.in` | `demo1234` | Complete bookings to trigger loyalty |
+| Admin | your `ADMIN_EMAIL` account | (your password) | Full consoles |
 
 ## 5. Notes
 
